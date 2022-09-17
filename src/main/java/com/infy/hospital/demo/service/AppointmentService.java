@@ -57,7 +57,7 @@ public class AppointmentService {
 		manager.debug("finding appointment for doctor id:" + drId + " appointmentId: " + appointmentId);
 		// whether appointment is belongs to requested dr or not.
 		Optional<Appointment> data = this.appointmentDAO.findById(appointmentId);
-		var result = data.filter(d -> drId == d.getDoctor().getDoctorId())
+		Optional<Appointment> result = data.filter(d -> drId == d.getDoctor().getDoctorId())
 		    .filter(d -> AppointmentStatus.BOOKED.equals(d.getAppointmentStatus()))
 		    .map(d ->  {
 		    	d.setAppointmentStatus(AppointmentStatus.CANCELLED);
@@ -90,7 +90,7 @@ public class AppointmentService {
 		Optional<AppointmentProjection> appointment = this.appointmentDAO.findAppointment(doctor.getDoctorId(),
 				patient.getPatientId(),
 				appointmentTime);
-		if (appointment.isEmpty()) {
+		if (!appointment.isPresent()) {
 			Appointment app = new Appointment(appointmentTime, doctor, patient, symptoms);
 			Optional<Appointment> booked = this.appointmentDAO.bookAppointment(app);
 			return booked.map(bk -> new AppointmentDTO(bk.getAppointmentId(), bk.getAppointmentStatus().toString(),

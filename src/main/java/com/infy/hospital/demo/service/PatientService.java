@@ -1,5 +1,6 @@
 package com.infy.hospital.demo.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,16 +38,16 @@ public class PatientService {
 	public AppointmentDTO bookAnAppointment(AppointmentBookingRequest request) {
 	
      	Optional<Doctor> doctor = doctorService.fetchDoctor(request.getDoctorId());
-     	if (doctor.isEmpty()) throw new InvalidDoctorException(request.getDoctorId() + " doesnt exist.");
+     	if (!doctor.isPresent()) throw new InvalidDoctorException(request.getDoctorId() + " doesnt exist.");
      	
 		Optional<Patient> patient = patientDAO.fetchPatient(request.getPatientId());
-		if (patient.isEmpty()) {
+		if (!patient.isPresent()) {
 			throw new NoPatientFoundException(request.getPatientId() + " is invalid");
 		}
 		
 		Optional<AppointmentDTO> appointment = appointmentService.bookSlotIfAvailable(doctor.get(), patient.get(), request.getAppointmentTime(),
 				request.getSymptoms());
-		if (appointment.isEmpty()) {
+		if (!appointment.isPresent()) {
 			throw new NoAppointmentSlotAvailableException("Appointment slot is not available, please book another");
 		}
 		
@@ -57,7 +58,7 @@ public class PatientService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public boolean cancelAppointment(String pId, Long aId) {
 		Optional<AppointmentProjection> app = this.appointmentService.cancelAppointmentByPatient(pId, aId);
-		if (app.isEmpty()) throw new NoAppointmentFoundException("Appointment id: " + aId + " doesn't exist.");
+		if (!app.isPresent()) throw new NoAppointmentFoundException("Appointment id: " + aId + " doesn't exist.");
 		return true;
 	}
 
@@ -69,7 +70,7 @@ public class PatientService {
 							app.getDoctor().getDoctorId(), pId, app.getSymptoms(), app.getDate(), app.getDoctor().getName()))
 					.collect(Collectors.toList());
 		}
-		return List.of();
+		return new ArrayList<>();
 		
 	}
 
